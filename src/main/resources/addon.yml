@@ -1,6 +1,6 @@
-name: ShiningAddonExample
+name: ShiningSlimeTeam
 version: 1.0
-main: io.github.sunshinewzy.shiningaddonexample.ShiningAddonExample
+main: me.xiaozhang.slime.shining.ShiningSlimeTeam
 shining_version: 2.0.0
-author: 'Sunshine_wzy'
-description: Example
+author: 'xiaozhangup'
+description: SlimeSystem

@@ -1,3 +1,3 @@
 
-rootProject.name = "ShiningAddonExample"
+rootProject.name = "ShiningSlimeTeam"
 

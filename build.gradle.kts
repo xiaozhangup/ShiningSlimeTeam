@@ -4,7 +4,7 @@ plugins {
     kotlin("jvm") version "1.7.21"
 }
 
-group = "io.github.sunshinewzy.shiningaddonexample"
+group = "me.xiaozhang.slime.shining"
 version = "1.0"
 
 repositories {

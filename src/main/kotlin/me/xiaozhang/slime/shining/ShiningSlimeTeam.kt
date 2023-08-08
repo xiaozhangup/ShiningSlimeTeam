@@ -1,10 +1,9 @@
-package io.github.sunshinewzy.shiningaddonexample
+package me.xiaozhang.slime.shining
 
 import io.github.sunshinewzy.shining.api.addon.ShiningAddon
 import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideTeamSetupEvent
-import io.github.sunshinewzy.shining.core.guide.team.GuideTeam.Companion.getGuideTeam
 
-object ShiningAddonExample : ShiningAddon() {
+object ShiningSlimeTeam : ShiningAddon() {
 
     override fun onInit() {
         
@@ -18,7 +17,7 @@ object ShiningAddonExample : ShiningAddon() {
     }
 
     override fun onActive() {
-        
+
     }
 
     override fun onDisable() {
