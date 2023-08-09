@@ -22,43 +22,43 @@ object ShiningSlimeTeam : ShiningAddon() {
 
     override fun onEnable() {
         addonManager.registerListener(ShiningGuideTeamGetAsyncEvent::class.java) {
-            val island = it.player.getIsland()!!
-
+            val player = it.player
             ShiningDispatchers.launchDB {
-                var isTeam: GuideTeam? = null
                 newSuspendedTransaction {
-                    val pre = GuideTeam.findById(island)
-                    if (pre != null) {
-                        isTeam = pre
-                    } else {
-                        isTeam = GuideTeam.create(it.player, it.player.island().landId.toString(), ItemStack(Material.GRASS_BLOCK))
-                        it.player.world.setTeam(isTeam!!.id.value)
+                    player.island()?.let { island ->
+                        player.getTeam()?.let { guideTeam ->
+                            it.team = guideTeam
+                        } ?: run {
+                            val newTeam = GuideTeam.create(island.landId, island.landId.toString(), ItemStack(Material.GRASS_BLOCK))!!
+                            player.world.setTeam(newTeam.id.value)
+                            it.team = newTeam
+                        }
+                    } ?: run {
+                        it.isCancelled = true
                     }
                 }
-                it.team = isTeam
             }
         }
 
         addonManager.registerListener(ShiningGuideOpenEvent::class.java) {
-            if (!it.player.inIsland()) { it.isCancelled = true }
+            val island = it.player.island()
+            val uuid = it.player.uniqueId
+
+            if (island == null || (island.owner != uuid && !island.teams.contains(uuid))) { it.isCancelled = true }
         }
     }
 
-    private fun Player.getIsland(): Int? {
-        val id = world.persistentDataContainer.getOrDefault(namespacedKey, PersistentDataType.INTEGER, -1)
-        return if (id == -1) null
-        else id
-    }
-
-    private fun Player.inIsland(): Boolean {
-        return IslandManager.getLand(world.name).isPresent
-    }
-
-    private fun Player.island(): Island {
-        return IslandManager.getLand(world.name).get()
+    private fun Player.island(): Island? {
+        return IslandManager.getLand(world.name).orElse(null)
     }
 
     private fun World.setTeam(id: Int) {
         persistentDataContainer.set(namespacedKey, PersistentDataType.INTEGER, id)
+    }
+
+    private fun Player.getTeam(): GuideTeam? {
+        val id = world.persistentDataContainer.getOrDefault(namespacedKey, PersistentDataType.INTEGER, -1)
+        return if (id == -1) null
+        else GuideTeam.findById(id)
     }
 }
