@@ -26,6 +26,9 @@ object ShiningSlimeTeam : ShiningAddon() {
             ShiningDispatchers.launchDB {
                 newSuspendedTransaction {
                     player.island()?.let { island ->
+                        val uuid = player.uniqueId
+                        if (island.owner != uuid && !island.teams.contains(uuid)) it.isCancelled = true
+
                         player.getTeam()?.let { guideTeam ->
                             it.team = guideTeam
                         } ?: run {
