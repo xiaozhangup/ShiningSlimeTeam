@@ -1,2 +1,2 @@
-# ShiningAddonExample
-- An example of shining addon
+# ShiningSlimeTeam
+- Hook Shining's team system to SlimeCargo
