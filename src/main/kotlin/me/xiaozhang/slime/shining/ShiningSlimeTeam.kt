@@ -3,11 +3,16 @@ package me.xiaozhang.slime.shining
 import io.github.sunshinewzy.shining.api.addon.ShiningAddon
 import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideOpenEvent
 import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideTeamGetAsyncEvent
+import io.github.sunshinewzy.shining.api.guide.ElementCondition
+import io.github.sunshinewzy.shining.core.guide.ShiningGuide
 import io.github.sunshinewzy.shining.core.guide.team.GuideTeam
-import io.github.sunshinewzy.shining.core.guide.team.GuideTeams
 import io.github.sunshinewzy.shining.objects.ShiningDispatchers
+import me.xiaozhangup.allay.hook.shining.ShiningDisplayEvent
+import me.xiaozhangup.allay.hook.shining.ShiningOpenEvent
+import me.xiaozhangup.allay.hook.shining.ShiningTaskRequestEvent
 import me.xiaozhangup.slimecargo.manager.IslandManager
 import me.xiaozhangup.slimecargo.objects.Island
+import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.World
@@ -36,6 +41,7 @@ object ShiningSlimeTeam : ShiningAddon() {
                             player.world.setTeam(newTeam.id.value)
                             it.team = newTeam
                         }
+
                     } ?: run {
                         it.isCancelled = true
                     }
@@ -48,6 +54,33 @@ object ShiningSlimeTeam : ShiningAddon() {
             val uuid = it.player.uniqueId
 
             if (island == null || (island.owner != uuid && !island.teams.contains(uuid))) { it.isCancelled = true }
+        }
+
+        addonManager.registerListener(ShiningOpenEvent::class.java) {
+            ShiningGuide.openLastElement(it.player)
+        } // 打开 Guide 的事件
+
+        addonManager.registerListener(ShiningTaskRequestEvent::class.java) {
+            ShiningDispatchers.launchDB {
+                newSuspendedTransaction {
+                    it.player.getTeam()?.let { guideTeam ->
+                        val tasks = ShiningGuide.getElementsByCondition(guideTeam, ElementCondition.UNLOCKED)
+
+                        Bukkit.getScheduler().runTask(
+                            Bukkit.getPluginManager().getPlugin("shining")!!,
+                            Runnable {
+                                ShiningDisplayEvent(
+                                    it.player,
+                                    it.island,
+                                    tasks.map { it.getSymbol() }
+                                ).apply {
+                                    call()
+                                }
+                            }
+                        )
+                    }
+                }
+            }
         }
     }
 
