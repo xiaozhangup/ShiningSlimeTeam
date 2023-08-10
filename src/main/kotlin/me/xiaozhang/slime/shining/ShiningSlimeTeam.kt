@@ -9,6 +9,7 @@ import io.github.sunshinewzy.shining.api.guide.ElementCondition
 import io.github.sunshinewzy.shining.core.guide.ShiningGuide
 import io.github.sunshinewzy.shining.core.guide.team.GuideTeam
 import io.github.sunshinewzy.shining.objects.ShiningDispatchers
+import kotlinx.coroutines.runBlocking
 import me.xiaozhangup.allay.hook.shining.ShiningDisplayEvent
 import me.xiaozhangup.allay.hook.shining.ShiningOpenEvent
 import me.xiaozhangup.allay.hook.shining.ShiningTaskRequestEvent
@@ -30,7 +31,7 @@ object ShiningSlimeTeam : ShiningAddon() {
     override fun onEnable() {
         addonManager.registerListener(ShiningGuideTeamGetAsyncEvent::class.java) {
             val player = it.player
-            ShiningDispatchers.launchDB {
+            runBlocking(ShiningDispatchers.DB) {
                 newSuspendedTransaction {
                     player.island()?.let { island ->
                         val uuid = player.uniqueId
