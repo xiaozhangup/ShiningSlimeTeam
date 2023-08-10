@@ -4,6 +4,7 @@ import io.github.sunshinewzy.shining.Shining
 import io.github.sunshinewzy.shining.api.addon.ShiningAddon
 import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideOpenEvent
 import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideTeamGetAsyncEvent
+import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideTeamSetupEvent
 import io.github.sunshinewzy.shining.api.guide.ElementCondition
 import io.github.sunshinewzy.shining.core.guide.ShiningGuide
 import io.github.sunshinewzy.shining.core.guide.team.GuideTeam
@@ -55,6 +56,10 @@ object ShiningSlimeTeam : ShiningAddon() {
             val uuid = it.player.uniqueId
 
             if (island == null || (island.owner != uuid && !island.teams.contains(uuid))) { it.isCancelled = true }
+        }
+
+        addonManager.registerListener(ShiningGuideTeamSetupEvent::class.java) {
+            it.isCancelled = true
         }
 
         addonManager.registerListener(ShiningOpenEvent::class.java) {
