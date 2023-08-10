@@ -1,5 +1,6 @@
 package me.xiaozhang.slime.shining
 
+import io.github.sunshinewzy.shining.Shining
 import io.github.sunshinewzy.shining.api.addon.ShiningAddon
 import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideOpenEvent
 import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideTeamGetAsyncEvent
@@ -64,10 +65,10 @@ object ShiningSlimeTeam : ShiningAddon() {
             ShiningDispatchers.launchDB {
                 newSuspendedTransaction {
                     it.player.getTeam()?.let { guideTeam ->
-                        val tasks = ShiningGuide.getElementsByCondition(guideTeam, ElementCondition.UNLOCKED)
+                        val tasks = ShiningGuide.getElementsByCondition(guideTeam, ElementCondition.UNLOCKED, true)
 
                         Bukkit.getScheduler().runTask(
-                            Bukkit.getPluginManager().getPlugin("shining")!!,
+                            Shining.plugin,
                             Runnable {
                                 ShiningDisplayEvent(
                                     it.player,
