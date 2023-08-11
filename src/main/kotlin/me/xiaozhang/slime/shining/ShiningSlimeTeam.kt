@@ -8,6 +8,7 @@ import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideTeamSetupEvent
 import io.github.sunshinewzy.shining.api.guide.ElementCondition
 import io.github.sunshinewzy.shining.core.guide.ShiningGuide
 import io.github.sunshinewzy.shining.core.guide.team.GuideTeam
+import io.github.sunshinewzy.shining.core.guide.team.GuideTeam.Companion.getGuideTeam
 import io.github.sunshinewzy.shining.objects.ShiningDispatchers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -72,8 +73,9 @@ object ShiningSlimeTeam : ShiningAddon() {
 
         addonManager.registerListener(ShiningTaskRequestEvent::class.java) {
             ShiningDispatchers.launchDB {
-                it.player.getTeam()?.let { guideTeam ->
-                    val tasks = ShiningGuide.getElementsByCondition(guideTeam, ElementCondition.UNLOCKED, true)
+                val player = it.player
+                player.getGuideTeam()?.let { guideTeam ->
+                    val tasks = ShiningGuide.getElementsByCondition(guideTeam, ElementCondition.UNLOCKED, true).map { it.getUnlockedSymbol(player) }
 
                     Bukkit.getScheduler().runTask(
                         Shining.plugin,
@@ -81,7 +83,7 @@ object ShiningSlimeTeam : ShiningAddon() {
                             ShiningDisplayEvent(
                                 it.player,
                                 it.island,
-                                tasks.map { it.getSymbol() }
+                                tasks
                             ).apply {
                                 call()
                             }
