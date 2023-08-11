@@ -9,6 +9,7 @@ import io.github.sunshinewzy.shining.api.guide.ElementCondition
 import io.github.sunshinewzy.shining.core.guide.ShiningGuide
 import io.github.sunshinewzy.shining.core.guide.team.GuideTeam
 import io.github.sunshinewzy.shining.objects.ShiningDispatchers
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import me.xiaozhangup.allay.hook.shining.ShiningDisplayEvent
 import me.xiaozhangup.allay.hook.shining.ShiningOpenEvent
@@ -32,24 +33,21 @@ object ShiningSlimeTeam : ShiningAddon() {
         addonManager.registerListener(ShiningGuideTeamGetAsyncEvent::class.java) {
             it.isCancelled = true
             val player = it.player
-            println("ui21")
             transaction {
                 player.island()?.let { island ->
                     player.getTeam()?.let { guideTeam ->
-                        println("cvbnm")
                         it.team = guideTeam
                     } ?: run {
-                        println("uiop1")
-                        runBlocking(ShiningDispatchers.DB) {
-                            println("uiop")
-                            val newTeam = GuideTeam.create(
+                        val newTeam = runBlocking(Dispatchers.IO) {
+                            GuideTeam.create(
                                 island.landId,
                                 island.landId.toString(),
                                 ItemStack(Material.GRASS_BLOCK)
                             )!!
-                            player.world.setTeam(newTeam.id.value)
-                            it.team = newTeam
                         }
+
+                        player.world.setTeam(newTeam.id.value)
+                        it.team = newTeam
                     }
                 }
             }
@@ -73,25 +71,22 @@ object ShiningSlimeTeam : ShiningAddon() {
         } // 打开 Guide 的事件
 
         addonManager.registerListener(ShiningTaskRequestEvent::class.java) {
-            transaction {
-                ShiningDispatchers.launchDB {
-                    println("uioasdadas1")
-                    it.player.getTeam()?.let { guideTeam ->
-                        val tasks = ShiningGuide.getElementsByCondition(guideTeam, ElementCondition.UNLOCKED, true)
+            ShiningDispatchers.launchDB {
+                it.player.getTeam()?.let { guideTeam ->
+                    val tasks = ShiningGuide.getElementsByCondition(guideTeam, ElementCondition.UNLOCKED, true)
 
-                        Bukkit.getScheduler().runTask(
-                            Shining.plugin,
-                            Runnable {
-                                ShiningDisplayEvent(
-                                    it.player,
-                                    it.island,
-                                    tasks.map { it.getSymbol() }
-                                ).apply {
-                                    call()
-                                }
+                    Bukkit.getScheduler().runTask(
+                        Shining.plugin,
+                        Runnable {
+                            ShiningDisplayEvent(
+                                it.player,
+                                it.island,
+                                tasks.map { it.getSymbol() }
+                            ).apply {
+                                call()
                             }
-                        )
-                    }
+                        }
+                    )
                 }
             }
         }
@@ -108,6 +103,6 @@ object ShiningSlimeTeam : ShiningAddon() {
     private fun Player.getTeam(): GuideTeam? {
         val id = world.persistentDataContainer.getOrDefault(namespacedKey, PersistentDataType.INTEGER, -1)
         return if (id == -1) null
-        else GuideTeam.findById(id)
+        else transaction { GuideTeam.findById(id) }
     }
 }
