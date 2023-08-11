@@ -22,7 +22,6 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
-import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object ShiningSlimeTeam : ShiningAddon() {
@@ -33,15 +32,16 @@ object ShiningSlimeTeam : ShiningAddon() {
         addonManager.registerListener(ShiningGuideTeamGetAsyncEvent::class.java) {
             it.isCancelled = true
             val player = it.player
+            println("ui21")
             transaction {
                 player.island()?.let { island ->
-                    val uuid = player.uniqueId
-                    if (island.owner != uuid && !island.teams.contains(uuid)) it.isCancelled = true
-
                     player.getTeam()?.let { guideTeam ->
+                        println("cvbnm")
                         it.team = guideTeam
                     } ?: run {
+                        println("uiop1")
                         runBlocking(ShiningDispatchers.DB) {
+                            println("uiop")
                             val newTeam = GuideTeam.create(
                                 island.landId,
                                 island.landId.toString(),
@@ -51,7 +51,6 @@ object ShiningSlimeTeam : ShiningAddon() {
                             it.team = newTeam
                         }
                     }
-
                 }
             }
         }
@@ -74,8 +73,9 @@ object ShiningSlimeTeam : ShiningAddon() {
         } // 打开 Guide 的事件
 
         addonManager.registerListener(ShiningTaskRequestEvent::class.java) {
-            ShiningDispatchers.launchDB {
-                newSuspendedTransaction {
+            transaction {
+                ShiningDispatchers.launchDB {
+                    println("uioasdadas1")
                     it.player.getTeam()?.let { guideTeam ->
                         val tasks = ShiningGuide.getElementsByCondition(guideTeam, ElementCondition.UNLOCKED, true)
 
