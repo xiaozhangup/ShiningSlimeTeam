@@ -23,6 +23,7 @@ import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
 import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
+import org.jetbrains.exposed.sql.transactions.transaction
 
 object ShiningSlimeTeam : ShiningAddon() {
 
@@ -30,24 +31,27 @@ object ShiningSlimeTeam : ShiningAddon() {
 
     override fun onEnable() {
         addonManager.registerListener(ShiningGuideTeamGetAsyncEvent::class.java) {
+            it.isCancelled = true
             val player = it.player
-            runBlocking(ShiningDispatchers.DB) {
-                newSuspendedTransaction {
-                    player.island()?.let { island ->
-                        val uuid = player.uniqueId
-                        if (island.owner != uuid && !island.teams.contains(uuid)) it.isCancelled = true
+            transaction {
+                player.island()?.let { island ->
+                    val uuid = player.uniqueId
+                    if (island.owner != uuid && !island.teams.contains(uuid)) it.isCancelled = true
 
-                        player.getTeam()?.let { guideTeam ->
-                            it.team = guideTeam
-                        } ?: run {
-                            val newTeam = GuideTeam.create(island.landId, island.landId.toString(), ItemStack(Material.GRASS_BLOCK))!!
+                    player.getTeam()?.let { guideTeam ->
+                        it.team = guideTeam
+                    } ?: run {
+                        runBlocking(ShiningDispatchers.DB) {
+                            val newTeam = GuideTeam.create(
+                                island.landId,
+                                island.landId.toString(),
+                                ItemStack(Material.GRASS_BLOCK)
+                            )!!
                             player.world.setTeam(newTeam.id.value)
                             it.team = newTeam
                         }
-
-                    } ?: run {
-                        it.isCancelled = true
                     }
+
                 }
             }
         }
@@ -56,7 +60,9 @@ object ShiningSlimeTeam : ShiningAddon() {
             val island = it.player.island()
             val uuid = it.player.uniqueId
 
-            if (island == null || (island.owner != uuid && !island.teams.contains(uuid))) { it.isCancelled = true }
+            if (island == null || (island.owner != uuid && !island.teams.contains(uuid))) {
+                it.isCancelled = true
+            }
         }
 
         addonManager.registerListener(ShiningGuideTeamSetupEvent::class.java) {
