@@ -9,6 +9,7 @@ import io.github.sunshinewzy.shining.api.guide.ElementCondition
 import io.github.sunshinewzy.shining.core.guide.ShiningGuide
 import io.github.sunshinewzy.shining.core.guide.team.GuideTeam
 import io.github.sunshinewzy.shining.core.guide.team.GuideTeam.Companion.getGuideTeam
+import io.github.sunshinewzy.shining.core.guide.team.GuideTeams
 import io.github.sunshinewzy.shining.objects.ShiningDispatchers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
@@ -24,6 +25,7 @@ import org.bukkit.World
 import org.bukkit.entity.Player
 import org.bukkit.inventory.ItemStack
 import org.bukkit.persistence.PersistentDataType
+import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransaction
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object ShiningSlimeTeam : ShiningAddon() {
@@ -38,13 +40,15 @@ object ShiningSlimeTeam : ShiningAddon() {
                 player.island()?.let { island ->
                     player.getTeam()?.let { guideTeam ->
                         it.team = guideTeam
-                    } ?: run {
+                    } ?: kotlin.run {
                         val newTeam = runBlocking(Dispatchers.IO) {
                             GuideTeam.create(
                                 island.landId,
                                 island.landId.toString(),
                                 ItemStack(Material.GRASS_BLOCK)
-                            )!!
+                            ) ?: newSuspendedTransaction { 
+                                GuideTeam.find { GuideTeams.captain eq island.landId }.first()
+                            }
                         }
 
                         player.world.setTeam(newTeam.id.value)
