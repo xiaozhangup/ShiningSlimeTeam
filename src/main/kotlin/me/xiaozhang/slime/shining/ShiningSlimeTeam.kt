@@ -1,24 +1,14 @@
 package me.xiaozhang.slime.shining
 
-import io.github.sunshinewzy.shining.Shining
-import io.github.sunshinewzy.shining.api.addon.ShiningAddon
-import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideOpenEvent
 import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideTeamGetAsyncEvent
 import io.github.sunshinewzy.shining.api.event.guide.ShiningGuideTeamSetupEvent
-import io.github.sunshinewzy.shining.api.guide.ElementCondition
-import io.github.sunshinewzy.shining.core.guide.ShiningGuide
+import io.github.sunshinewzy.shining.core.addon.ShiningAddon
 import io.github.sunshinewzy.shining.core.guide.team.GuideTeam
-import io.github.sunshinewzy.shining.core.guide.team.GuideTeam.Companion.getGuideTeam
 import io.github.sunshinewzy.shining.core.guide.team.GuideTeams
-import io.github.sunshinewzy.shining.objects.ShiningDispatchers
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import me.xiaozhangup.allay.hook.shining.ShiningDisplayEvent
-import me.xiaozhangup.allay.hook.shining.ShiningOpenEvent
-import me.xiaozhangup.allay.hook.shining.ShiningTaskRequestEvent
 import me.xiaozhangup.slimecargo.manager.IslandManager
 import me.xiaozhangup.slimecargo.objects.Island
-import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.World
@@ -58,43 +48,8 @@ object ShiningSlimeTeam : ShiningAddon() {
             }
         }
 
-        addonManager.registerListener(ShiningGuideOpenEvent::class.java) {
-            val island = it.player.island()
-            val uuid = it.player.uniqueId
-
-            if (island == null || (island.owner != uuid && !island.teams.contains(uuid))) {
-                it.isCancelled = true
-            }
-        }
-
         addonManager.registerListener(ShiningGuideTeamSetupEvent::class.java) {
             it.isCancelled = true
-        }
-
-        addonManager.registerListener(ShiningOpenEvent::class.java) {
-            ShiningGuide.openLastElement(it.player)
-        } // 打开 Guide 的事件
-
-        addonManager.registerListener(ShiningTaskRequestEvent::class.java) {
-            ShiningDispatchers.launchDB {
-                val player = it.player
-                player.getGuideTeam()?.let { guideTeam ->
-                    val tasks = ShiningGuide.getElementsByCondition(guideTeam, ElementCondition.UNLOCKED, true).map { it.getUnlockedSymbol(player) }
-
-                    Bukkit.getScheduler().runTask(
-                        Shining.plugin,
-                        Runnable {
-                            ShiningDisplayEvent(
-                                it.player,
-                                it.island,
-                                tasks
-                            ).apply {
-                                call()
-                            }
-                        }
-                    )
-                }
-            }
         }
     }
 
@@ -111,4 +66,5 @@ object ShiningSlimeTeam : ShiningAddon() {
         return if (id == -1) null
         else transaction { GuideTeam.findById(id) }
     }
+
 }
