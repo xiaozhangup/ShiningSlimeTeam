@@ -39,7 +39,6 @@ dependencies {
     compileOnly("com.fasterxml.jackson.module:jackson-module-kotlin:$jacksonVersion")
     compileOnly("com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:$jacksonVersion")
     
-    compileOnly("com.github.Sunshine-wzy:shining:2.0.0-9")
     compileOnly(fileTree("libs"))
     
     
