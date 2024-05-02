@@ -9,6 +9,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import me.xiaozhangup.slimecargo.manager.IslandManager
 import me.xiaozhangup.slimecargo.objects.Island
+import me.xiaozhangup.slimecargo.utils.island
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
 import org.bukkit.World
@@ -19,7 +20,6 @@ import org.jetbrains.exposed.sql.transactions.experimental.newSuspendedTransacti
 import org.jetbrains.exposed.sql.transactions.transaction
 
 object ShiningSlimeTeam : ShiningAddon() {
-
     private val namespacedKey: NamespacedKey = NamespacedKey("shining", "team")
 
     override fun onEnable() {
@@ -27,17 +27,17 @@ object ShiningSlimeTeam : ShiningAddon() {
             it.isCancelled = true
             val player = it.player
             transaction {
-                player.island()?.let { island ->
+                island(player.world)?.let { island ->
                     player.getTeam()?.let { guideTeam ->
                         it.team = guideTeam
                     } ?: kotlin.run {
                         val newTeam = runBlocking(Dispatchers.IO) {
                             GuideTeam.create(
-                                island.landId,
-                                island.landId.toString(),
+                                island.uuid,
+                                island.uuid.toString(),
                                 ItemStack(Material.GRASS_BLOCK)
                             ) ?: newSuspendedTransaction { 
-                                GuideTeam.find { GuideTeams.captain eq island.landId }.first()
+                                GuideTeam.find { GuideTeams.captain eq island.uuid }.first()
                             }
                         }
 
@@ -53,10 +53,6 @@ object ShiningSlimeTeam : ShiningAddon() {
         }
     }
 
-    private fun Player.island(): Island? {
-        return IslandManager.getLand(world.name).orElse(null)
-    }
-
     private fun World.setTeam(id: Int) {
         persistentDataContainer.set(namespacedKey, PersistentDataType.INTEGER, id)
     }
@@ -66,5 +62,4 @@ object ShiningSlimeTeam : ShiningAddon() {
         return if (id == -1) null
         else transaction { GuideTeam.findById(id) }
     }
-
 }

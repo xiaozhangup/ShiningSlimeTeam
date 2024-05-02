@@ -10,7 +10,7 @@ version = "1.0"
 repositories {
     mavenLocal()
     mavenCentral()
-    maven("http://ptms.ink:8081/repository/releases") {
+    maven("https://repo.tabooproject.org/repository/releases") {
         isAllowInsecureProtocol = true
     }
     maven("https://www.jitpack.io")
@@ -23,6 +23,7 @@ dependencies {
     compileOnly("ink.ptms:nms-all:1.0.0")
     compileOnly("ink.ptms.core:v12001:12001:universal")
     compileOnly("ink.ptms.core:v12001:12001:mapped")
+    compileOnly("me.xiaozhangup:SlimeCargoNext:1.0.0")
     compileOnly(kotlin("stdlib"))
 
     compileOnly("org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion")
