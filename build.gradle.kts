@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.7.21"
+    kotlin("jvm") version "1.8.22"
 }
 
 group = "me.xiaozhang.slime.shining"
@@ -44,6 +44,14 @@ dependencies {
     
     
     testImplementation(kotlin("test"))
+}
+
+kotlin {
+    sourceSets.all {
+        languageSettings {
+            languageVersion = "2.0"
+        }
+    }
 }
 
 tasks.test {

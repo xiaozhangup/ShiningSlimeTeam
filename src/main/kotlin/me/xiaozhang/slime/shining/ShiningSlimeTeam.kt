@@ -7,8 +7,6 @@ import io.github.sunshinewzy.shining.core.guide.team.GuideTeam
 import io.github.sunshinewzy.shining.core.guide.team.GuideTeams
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import me.xiaozhangup.slimecargo.manager.IslandManager
-import me.xiaozhangup.slimecargo.objects.Island
 import me.xiaozhangup.slimecargo.utils.island
 import org.bukkit.Material
 import org.bukkit.NamespacedKey
